@@ -1,0 +1,4 @@
+package com.askmyteacher.app.navigation
+
+class NavGraph {
+}
