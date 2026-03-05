@@ -3,13 +3,8 @@ package com.askmyteacher.app.presentation.splash
 import com.askmyteacher.app.R
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,11 +34,9 @@ fun SplashContent() {
 
             Image(
                 painter = painterResource(id = R.drawable.ic_askmyteacher_logo),
-                contentDescription = "MyStudy Planner Logo",
-                modifier = Modifier.size(180.dp)
+                contentDescription = "AskMyTeacher Logo",
+                modifier = Modifier.size(200.dp)
             )
-
-            Spacer(modifier = Modifier.height(20.dp))
 
             Text(
                 text = "AskMyTeacher",
@@ -55,15 +48,21 @@ fun SplashContent() {
                 textAlign = TextAlign.Center,
                 maxLines = 1
             )
-        }
 
+            Spacer(modifier = Modifier.height(32.dp))
+
+            CircularProgressIndicator(
+                color = MaterialTheme.colorScheme.primary,
+                strokeWidth = 3.dp
+            )
+        }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun SplashPreview() {
-    AskMyTeacherTheme  {
+    AskMyTeacherTheme {
         SplashContent()
     }
 }
