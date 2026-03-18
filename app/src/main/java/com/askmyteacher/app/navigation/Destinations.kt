@@ -10,3 +10,9 @@ object Home
 
 @Serializable
 object Auth
+
+@Serializable
+data class Detail(val questionId: String)
+
+@Serializable
+object AskDoubt

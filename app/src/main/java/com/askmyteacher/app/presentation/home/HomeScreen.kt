@@ -2,23 +2,25 @@ package com.askmyteacher.app.presentation.home
 
 import androidx.compose.runtime.*
 import androidx.compose.ui.tooling.preview.Preview
-import com.askmyteacher.app.data.model.Question
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.askmyteacher.app.ui.theme.AskMyTeacherTheme
 
 @Composable
 fun HomeScreen(
-    state: HomeUiState,
-    onOpenDetail: (String) -> Unit,
-    onAskDoubtClick: () -> Unit
+    onOpenDetail: (String) -> Unit = {},
+    onAskDoubtClick: () -> Unit = {}
 ) {
+
+    val viewModel: HomeViewModel = viewModel()
+    val state by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.refresh()
+    }
 
     HomeContent(
         state = state,
         onQuestionClick = { question ->
-
-        },
-        onDismissPreview = {},
-        onOpenDetail = { question ->
             onOpenDetail(question.id ?: "")
         },
         onAskDoubtClick = onAskDoubtClick
@@ -30,13 +32,13 @@ fun HomeScreen(
 fun HomeScreenPreview() {
 
     val sampleQuestions = listOf(
-        Question(
+        com.askmyteacher.app.data.model.Question(
             id = "1",
             userId = "demo",
             questionText = "What is Ohm's Law?",
             status = "Answered"
         ),
-        Question(
+        com.askmyteacher.app.data.model.Question(
             id = "2",
             userId = "demo",
             questionText = "Explain Newton's Second Law of Motion",
@@ -45,11 +47,13 @@ fun HomeScreenPreview() {
     )
 
     AskMyTeacherTheme {
-        HomeScreen(
+        HomeContent(
             state = HomeUiState(
-                questions = sampleQuestions
+                questions = sampleQuestions,
+                isLoading = false,
+                error = null
             ),
-            onOpenDetail = {},
+            onQuestionClick = {},
             onAskDoubtClick = {}
         )
     }

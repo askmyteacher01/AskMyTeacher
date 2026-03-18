@@ -51,7 +51,14 @@ fun AskMyTeacherNavGraph() {
         }
 
         composable<Home> {
-            HomeScreen()
+            HomeScreen(
+                onOpenDetail = { questionId ->
+                    navController.navigate(Detail(questionId))
+                },
+                onAskDoubtClick = {
+                    navController.navigate(AskDoubt)
+                }
+            )
         }
     }
 }

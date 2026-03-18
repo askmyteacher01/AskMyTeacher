@@ -1,6 +1,8 @@
 package com.askmyteacher.app.presentation.splash
 
 import androidx.compose.runtime.*
+import androidx.compose.ui.tooling.preview.Preview
+import com.askmyteacher.app.ui.theme.AskMyTeacherTheme
 
 @Composable
 fun SplashScreen(
@@ -20,4 +22,13 @@ fun SplashScreen(
     }
 
     SplashContent()
+}
+
+
+@Preview(showBackground = true)
+@Composable
+fun SplashPreview() {
+    AskMyTeacherTheme {
+        SplashContent()
+    }
 }
