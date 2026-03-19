@@ -14,7 +14,9 @@ import com.askmyteacher.app.data.model.Question
 fun HomeContent(
     state: HomeUiState,
     onQuestionClick: (Question) -> Unit,
-    onAskDoubtClick: () -> Unit
+    onAskDoubtClick: () -> Unit,
+    onDismissPreview: () -> Unit,
+    onOpenDetail: (Question) -> Unit,
 ) {
 
     Scaffold(
@@ -70,5 +72,31 @@ fun HomeContent(
                 }
             }
         }
+    }
+    state.previewQuestion?.let { question ->
+
+        AlertDialog(
+            onDismissRequest = onDismissPreview,
+            confirmButton = {
+                TextButton(
+                    onClick = { onOpenDetail(question) }
+                ) {
+                    Text("Open Details")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = onDismissPreview) {
+                    Text("Close")
+                }
+            },
+            title = { Text("Question Preview") },
+            text = {
+                Column {
+                    Text(question.questionText)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    StatusBadge(status = question.status)
+                }
+            }
+        )
     }
 }

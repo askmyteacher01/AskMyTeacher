@@ -69,7 +69,16 @@ class HomeViewModel : ViewModel() {
             }
         }
     }
+
     fun refresh() {
         fetchQuestions()
+    }
+
+    fun openPreview(question: Question) {
+        _uiState.update { it.copy(previewQuestion = question) }
+    }
+
+    fun closePreview() {
+        _uiState.update { it.copy(previewQuestion = null) }
     }
 }

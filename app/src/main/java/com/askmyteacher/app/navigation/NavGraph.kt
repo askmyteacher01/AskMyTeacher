@@ -5,7 +5,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.askmyteacher.app.presentation.auth.AuthScreen
+import com.askmyteacher.app.presentation.detail.QuestionDetailScreen
 import com.askmyteacher.app.presentation.home.HomeScreen
 import com.askmyteacher.app.presentation.splash.SplashScreen
 import com.askmyteacher.app.presentation.splash.SplashViewModel
@@ -58,6 +60,16 @@ fun AskMyTeacherNavGraph() {
                 onAskDoubtClick = {
                     navController.navigate(AskDoubt)
                 }
+            )
+        }
+
+        composable<Detail> { backStackEntry ->
+
+            val detail: Detail = backStackEntry.toRoute()
+
+            QuestionDetailScreen(
+                questionId = detail.questionId,
+                onBack = { navController.popBackStack() }
             )
         }
     }

@@ -21,6 +21,13 @@ fun HomeScreen(
     HomeContent(
         state = state,
         onQuestionClick = { question ->
+            viewModel.openPreview(question)
+        },
+        onDismissPreview = {
+            viewModel.closePreview()
+        },
+        onOpenDetail = { question ->
+            viewModel.closePreview()
             onOpenDetail(question.id ?: "")
         },
         onAskDoubtClick = onAskDoubtClick
@@ -54,7 +61,9 @@ fun HomeScreenPreview() {
                 error = null
             ),
             onQuestionClick = {},
-            onAskDoubtClick = {}
+            onAskDoubtClick = {},
+            onDismissPreview = {},
+            onOpenDetail = {}
         )
     }
 }
