@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.askmyteacher.app.presentation.ask.AskDoubtScreen
 import com.askmyteacher.app.presentation.auth.AuthScreen
 import com.askmyteacher.app.presentation.detail.QuestionDetailScreen
 import com.askmyteacher.app.presentation.home.HomeScreen
@@ -70,6 +71,18 @@ fun AskMyTeacherNavGraph() {
             QuestionDetailScreen(
                 questionId = detail.questionId,
                 onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable<AskDoubt> {
+
+            AskDoubtScreen(
+                onSubmit = { questionText ->
+                    navController.popBackStack()
+                },
+                onBack = {
+                    navController.popBackStack()
+                }
             )
         }
     }
