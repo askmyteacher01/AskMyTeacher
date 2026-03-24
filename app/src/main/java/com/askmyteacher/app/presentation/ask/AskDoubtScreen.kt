@@ -1,8 +1,17 @@
 package com.askmyteacher.app.presentation.ask
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import com.askmyteacher.app.ui.theme.AskMyTeacherTheme
+import java.io.File
 
 @Composable
 fun AskDoubtScreen(
@@ -10,18 +19,59 @@ fun AskDoubtScreen(
     onBack: () -> Unit
 ) {
 
+    val context = LocalContext.current
     var state by remember { mutableStateOf(AskDoubtUiState()) }
+
+    val imageFile = remember {
+        File(context.cacheDir, "captured_image.jpg")
+    }
+
+    val imageUri: Uri = FileProvider.getUriForFile(
+        context,
+        "${context.packageName}.provider",
+        imageFile
+    )
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success) {
+            state = state.copy(selectedImageUri = imageUri)
+        }
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            cameraLauncher.launch(imageUri)
+        }
+    }
 
     AskDoubtContent(
         state = state,
         onQuestionChange = { state = state.copy(questionText = it) },
-        onImageClick = { /* Commit 12 */ },
+        onImageClick = {
+            when {
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.CAMERA
+                ) == PackageManager.PERMISSION_GRANTED -> {
+                    cameraLauncher.launch(imageUri)
+                }
+
+                else -> {
+                    permissionLauncher.launch(Manifest.permission.CAMERA)
+                }
+            }
+        },
         onSubmitClick = {
             onSubmit(state.questionText)
         },
         onBack = onBack
     )
 }
+
 
 @Preview(showBackground = true)
 @Composable

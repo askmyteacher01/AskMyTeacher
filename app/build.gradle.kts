@@ -61,4 +61,5 @@ dependencies {
     implementation("io.ktor:ktor-client-android:3.3.3")
     implementation("io.github.jan-tennert.supabase:storage-kt")
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.coil.compose)
 }
