@@ -10,17 +10,19 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.askmyteacher.app.ui.theme.AskMyTeacherTheme
 import java.io.File
 
 @Composable
 fun AskDoubtScreen(
-    onSubmit: (String) -> Unit,
+    onSubmit: (String, String?) -> Unit,
     onBack: () -> Unit
 ) {
 
     val context = LocalContext.current
-    var state by remember { mutableStateOf(AskDoubtUiState()) }
+    val viewModel: AskDoubtViewModel = viewModel()
+    val state by viewModel.uiState.collectAsState()
 
     val imageFile = remember {
         File(context.cacheDir, "captured_image.jpg")
@@ -36,7 +38,7 @@ fun AskDoubtScreen(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
         if (success) {
-            state = state.copy(selectedImageUri = imageUri)
+            viewModel.setImage(imageUri)
         }
     }
 
@@ -50,7 +52,7 @@ fun AskDoubtScreen(
 
     AskDoubtContent(
         state = state,
-        onQuestionChange = { state = state.copy(questionText = it) },
+        onQuestionChange = viewModel::onQuestionChange,
         onImageClick = {
             when {
                 ContextCompat.checkSelfPermission(
@@ -66,12 +68,14 @@ fun AskDoubtScreen(
             }
         },
         onSubmitClick = {
-            onSubmit(state.questionText)
+            viewModel.submitQuestion(
+                imageFile = if (state.selectedImageUri != null) imageFile else null,
+                onSuccess = onSubmit
+            )
         },
         onBack = onBack
     )
 }
-
 
 @Preview(showBackground = true)
 @Composable
