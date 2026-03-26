@@ -16,7 +16,7 @@ import java.io.File
 
 @Composable
 fun AskDoubtScreen(
-    onSubmit: (String, String?) -> Unit,
+    onSubmit: () -> Unit,
     onBack: () -> Unit
 ) {
 
@@ -70,7 +70,9 @@ fun AskDoubtScreen(
         onSubmitClick = {
             viewModel.submitQuestion(
                 imageFile = if (state.selectedImageUri != null) imageFile else null,
-                onSuccess = onSubmit
+                onSuccess = {
+                    onSubmit()
+                }
             )
         },
         onBack = onBack

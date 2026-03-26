@@ -4,12 +4,23 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.askmyteacher.app.data.SupabaseManager
+import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.storage.storage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
 import java.io.File
+import io.github.jan.supabase.auth.auth
+
+@Serializable
+data class InsertQuestion(
+    val user_id: String,
+    val question_text: String,
+    val image_url: String? = null,
+    val status: String = "Pending"
+)
 
 class AskDoubtViewModel : ViewModel() {
 
@@ -26,7 +37,7 @@ class AskDoubtViewModel : ViewModel() {
 
     fun submitQuestion(
         imageFile: File?,
-        onSuccess: (String, String?) -> Unit
+        onSuccess: () -> Unit
     ) {
 
         val state = _uiState.value
@@ -38,6 +49,9 @@ class AskDoubtViewModel : ViewModel() {
             _uiState.update { it.copy(isSubmitting = true, error = null) }
 
             try {
+
+                val user = SupabaseManager.client.auth.currentUserOrNull()
+                    ?: throw Exception("User not logged in")
 
                 var imageUrl: String? = null
 
@@ -57,9 +71,20 @@ class AskDoubtViewModel : ViewModel() {
                         .publicUrl(fileName)
                 }
 
+                val question = InsertQuestion(
+                    user_id = user.id,
+                    question_text = state.questionText,
+                    image_url = imageUrl,
+                    status = "Pending"
+                )
+
+                SupabaseManager.client
+                    .from("questions")
+                    .insert(question)
+
                 _uiState.update { it.copy(isSubmitting = false) }
 
-                onSuccess(state.questionText, imageUrl)
+                onSuccess()
 
             } catch (e: Exception) {
 

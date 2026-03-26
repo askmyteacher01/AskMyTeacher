@@ -77,7 +77,7 @@ fun AskMyTeacherNavGraph() {
         composable<AskDoubt> {
 
             AskDoubtScreen(
-                onSubmit = { questionText, imageUrl ->
+                onSubmit = {
                     navController.popBackStack()
                 },
                 onBack = {
