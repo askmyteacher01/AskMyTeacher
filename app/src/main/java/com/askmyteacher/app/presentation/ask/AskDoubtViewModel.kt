@@ -36,8 +36,7 @@ class AskDoubtViewModel : ViewModel() {
     }
 
     fun submitQuestion(
-        imageFile: File?,
-        onSuccess: () -> Unit
+        imageFile: File?
     ) {
 
         val state = _uiState.value
@@ -82,11 +81,16 @@ class AskDoubtViewModel : ViewModel() {
                     .from("questions")
                     .insert(question)
 
-                _uiState.update { it.copy(isSubmitting = false) }
-
-                onSuccess()
+                _uiState.update {
+                    it.copy(
+                        isSubmitting = false,
+                        isSuccess = true
+                    )
+                }
 
             } catch (e: Exception) {
+
+                e.printStackTrace()
 
                 _uiState.update {
                     it.copy(

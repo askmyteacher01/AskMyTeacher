@@ -34,6 +34,12 @@ fun AskDoubtScreen(
         imageFile
     )
 
+    LaunchedEffect(state.isSuccess) {
+        if (state.isSuccess) {
+            onSubmit()
+        }
+    }
+
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
@@ -61,18 +67,15 @@ fun AskDoubtScreen(
                 ) == PackageManager.PERMISSION_GRANTED -> {
                     cameraLauncher.launch(imageUri)
                 }
-
                 else -> {
                     permissionLauncher.launch(Manifest.permission.CAMERA)
                 }
             }
         },
         onSubmitClick = {
+            println("Submit clicked")
             viewModel.submitQuestion(
-                imageFile = if (state.selectedImageUri != null) imageFile else null,
-                onSuccess = {
-                    onSubmit()
-                }
+                imageFile = if (state.selectedImageUri != null) imageFile else null
             )
         },
         onBack = onBack
