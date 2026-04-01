@@ -4,6 +4,8 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.askmyteacher.app.data.SupabaseManager
+import com.askmyteacher.app.data.ai.GeminiService
+import com.askmyteacher.app.data.model.Question
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.storage.storage
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,6 +15,8 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import java.io.File
 import io.github.jan.supabase.auth.auth
+import com.askmyteacher.app.BuildConfig
+import com.askmyteacher.app.data.ai.buildGeminiRequest
 
 @Serializable
 data class InsertQuestion(
@@ -35,12 +39,9 @@ class AskDoubtViewModel : ViewModel() {
         _uiState.update { it.copy(selectedImageUri = uri) }
     }
 
-    fun submitQuestion(
-        imageFile: File?
-    ) {
+    fun submitQuestion(imageFile: File?) {
 
         val state = _uiState.value
-
         if (!state.canSubmit) return
 
         viewModelScope.launch {
@@ -77,9 +78,37 @@ class AskDoubtViewModel : ViewModel() {
                     status = "Pending"
                 )
 
-                SupabaseManager.client
+                val insertedQuestion = SupabaseManager.client
                     .from("questions")
-                    .insert(question)
+                    .insert(question) {
+                        select()
+                    }
+                    .decodeSingle<Question>()
+
+                viewModelScope.launch {
+
+                    try {
+
+                        val response = GeminiService.api.generateAnswer(
+                            apiKey = BuildConfig.GEMINI_API_KEY,
+                            request = buildGeminiRequest(state.questionText)
+                        )
+
+                        val answerText = response.candidates
+                            ?.firstOrNull()
+                            ?.content
+                            ?.parts
+                            ?.firstOrNull()
+                            ?.text
+
+                        if (answerText != null) {
+                            println("Gemini Answer: $answerText")
+                        }
+
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
 
                 _uiState.update {
                     it.copy(
