@@ -1,6 +1,7 @@
 package com.askmyteacher.app.presentation.ask
 
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.askmyteacher.app.data.SupabaseManager
@@ -85,29 +86,33 @@ class AskDoubtViewModel : ViewModel() {
                     }
                     .decodeSingle<Question>()
 
-                viewModelScope.launch {
+                val response = GeminiService.api.generateAnswer(
+                    apiKey = BuildConfig.GEMINI_API_KEY,
+                    request = buildGeminiRequest(state.questionText)
+                )
 
-                    try {
+                val answerText = response.candidates
+                    ?.firstOrNull()
+                    ?.content
+                    ?.parts
+                    ?.firstOrNull()
+                    ?.text
 
-                        val response = GeminiService.api.generateAnswer(
-                            apiKey = BuildConfig.GEMINI_API_KEY,
-                            request = buildGeminiRequest(state.questionText)
-                        )
+                Log.d("GeminiFlow", "Extracted Answer: $answerText")
 
-                        val answerText = response.candidates
-                            ?.firstOrNull()
-                            ?.content
-                            ?.parts
-                            ?.firstOrNull()
-                            ?.text
+                if (answerText != null && insertedQuestion.id != null) {
 
-                        if (answerText != null) {
-                            println("Gemini Answer: $answerText")
+                    SupabaseManager.client
+                        .from("questions")
+                        .update(
+                            mapOf(
+                                "answer_text" to answerText,
+                                "status" to "Answered"
+                            )
+                        ) {
+                            filter { eq("id", insertedQuestion.id) }
                         }
 
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
                 }
 
                 _uiState.update {
@@ -119,7 +124,7 @@ class AskDoubtViewModel : ViewModel() {
 
             } catch (e: Exception) {
 
-                e.printStackTrace()
+                Log.e("GeminiFlow", "Submit Error", e)
 
                 _uiState.update {
                     it.copy(
