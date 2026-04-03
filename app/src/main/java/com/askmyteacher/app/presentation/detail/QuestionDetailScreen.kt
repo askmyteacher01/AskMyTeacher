@@ -5,6 +5,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.askmyteacher.app.ui.theme.AskMyTeacherTheme
 
 @Composable
@@ -13,7 +14,7 @@ fun QuestionDetailScreen(
     onBack: () -> Unit
 ) {
 
-    val viewModel: DetailViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    val viewModel: DetailViewModel = viewModel()
     val state by viewModel.uiState.collectAsState()
 
     LaunchedEffect(questionId) {
@@ -22,9 +23,15 @@ fun QuestionDetailScreen(
 
     QuestionDetailContent(
         state = state,
-        onBack = onBack
+        onBack = onBack,
+        onDeleteClick = {
+            viewModel.deleteQuestion(questionId) {
+                onBack()
+            }
+        }
     )
 }
+
 
 @Preview(showBackground = true)
 @Composable
@@ -45,7 +52,8 @@ fun QuestionDetailPreview() {
                 isLoading = false,
                 error = null
             ),
-            onBack = {}
+            onBack = {},
+            onDeleteClick = {}
         )
     }
 }

@@ -49,4 +49,28 @@ class DetailViewModel : ViewModel() {
             }
         }
     }
+
+    fun deleteQuestion(
+        questionId: String,
+        onDeleted: () -> Unit
+    ) {
+        viewModelScope.launch {
+
+            try {
+
+                SupabaseManager.client
+                    .from("questions")
+                    .delete {
+                        filter { eq("id", questionId) }
+                    }
+
+                onDeleted()
+
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(error = e.message)
+                }
+            }
+        }
+    }
 }
