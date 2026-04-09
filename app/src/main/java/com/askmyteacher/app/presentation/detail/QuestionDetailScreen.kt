@@ -5,6 +5,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.askmyteacher.app.ui.theme.AskMyTeacherTheme
 
@@ -14,7 +16,16 @@ fun QuestionDetailScreen(
     onBack: () -> Unit
 ) {
 
-    val viewModel: DetailViewModel = viewModel()
+    val context = androidx.compose.ui.platform.LocalContext.current
+
+    val viewModel: DetailViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return DetailViewModel(context) as T
+            }
+        }
+    )
+
     val state by viewModel.uiState.collectAsState()
 
     LaunchedEffect(questionId) {
@@ -31,7 +42,6 @@ fun QuestionDetailScreen(
         }
     )
 }
-
 
 @Preview(showBackground = true)
 @Composable
