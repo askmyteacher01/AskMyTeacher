@@ -18,6 +18,9 @@ import java.io.File
 import io.github.jan.supabase.auth.auth
 import com.askmyteacher.app.BuildConfig
 import com.askmyteacher.app.data.ai.buildGeminiRequest
+import com.askmyteacher.app.data.local.AppDatabase
+import com.askmyteacher.app.data.local.CachedQuestionEntity
+import com.askmyteacher.app.utils.NetworkMonitor
 
 @Serializable
 data class InsertQuestion(
@@ -27,7 +30,10 @@ data class InsertQuestion(
     val status: String = "Pending"
 )
 
-class AskDoubtViewModel : ViewModel() {
+class AskDoubtViewModel(
+    private val database: AppDatabase,
+    private val networkMonitor: NetworkMonitor
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AskDoubtUiState())
     val uiState: StateFlow<AskDoubtUiState> = _uiState
@@ -40,7 +46,10 @@ class AskDoubtViewModel : ViewModel() {
         _uiState.update { it.copy(selectedImageUri = uri) }
     }
 
-    fun submitQuestion(imageFile: File?) {
+    fun submitQuestion(
+        imageFile: File?,
+        isOnline: Boolean
+    ) {
 
         val state = _uiState.value
         if (!state.canSubmit) return
@@ -50,6 +59,32 @@ class AskDoubtViewModel : ViewModel() {
             _uiState.update { it.copy(isSubmitting = true, error = null) }
 
             try {
+
+                if (!isOnline) {
+
+                    val localId = "local_${System.currentTimeMillis()}"
+
+                    val localQuestion = CachedQuestionEntity(
+                        id = localId,
+                        questionText = state.questionText,
+                        imageUrl = null,
+                        answerText = null,
+                        status = "Pending",
+                        createdAt = System.currentTimeMillis().toString(),
+                        syncStatus = "PendingSync"
+                    )
+
+                    database.cachedQuestionDao().insert(localQuestion)
+
+                    Log.d("OfflineMode", "Saved locally for sync")
+
+                    _uiState.update {
+                        it.copy(isSubmitting = false, isSuccess = true)
+                    }
+
+                    return@launch
+                }
+
 
                 val user = SupabaseManager.client.auth.currentUserOrNull()
                     ?: throw Exception("User not logged in")
@@ -81,9 +116,7 @@ class AskDoubtViewModel : ViewModel() {
 
                 val insertedQuestion = SupabaseManager.client
                     .from("questions")
-                    .insert(question) {
-                        select()
-                    }
+                    .insert(question) { select() }
                     .decodeSingle<Question>()
 
                 val response = GeminiService.api.generateAnswer(
@@ -98,8 +131,6 @@ class AskDoubtViewModel : ViewModel() {
                     ?.firstOrNull()
                     ?.text
 
-                Log.d("GeminiFlow", "Extracted Answer: $answerText")
-
                 if (answerText != null && insertedQuestion.id != null) {
 
                     SupabaseManager.client
@@ -112,25 +143,18 @@ class AskDoubtViewModel : ViewModel() {
                         ) {
                             filter { eq("id", insertedQuestion.id) }
                         }
-
                 }
 
                 _uiState.update {
-                    it.copy(
-                        isSubmitting = false,
-                        isSuccess = true
-                    )
+                    it.copy(isSubmitting = false, isSuccess = true)
                 }
 
             } catch (e: Exception) {
 
-                Log.e("GeminiFlow", "Submit Error", e)
+                Log.e("SubmitError", "Error", e)
 
                 _uiState.update {
-                    it.copy(
-                        isSubmitting = false,
-                        error = e.message
-                    )
+                    it.copy(isSubmitting = false, error = e.message)
                 }
             }
         }

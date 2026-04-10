@@ -12,6 +12,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.askmyteacher.app.ui.theme.AskMyTeacherTheme
+import com.askmyteacher.app.utils.isNetworkAvailable
 import java.io.File
 
 @Composable
@@ -21,7 +22,9 @@ fun AskDoubtScreen(
 ) {
 
     val context = LocalContext.current
-    val viewModel: AskDoubtViewModel = viewModel()
+    val viewModel: AskDoubtViewModel = viewModel(
+        factory = AskDoubtViewModelFactory(context)
+    )
     val state by viewModel.uiState.collectAsState()
 
     val imageFile = remember {
@@ -73,9 +76,12 @@ fun AskDoubtScreen(
             }
         },
         onSubmitClick = {
-            println("Submit clicked")
+
+            val isOnline = isNetworkAvailable(context)
+
             viewModel.submitQuestion(
-                imageFile = if (state.selectedImageUri != null) imageFile else null
+                imageFile = if (state.selectedImageUri != null) imageFile else null,
+                isOnline = isOnline
             )
         },
         onBack = onBack

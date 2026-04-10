@@ -1,7 +1,10 @@
 package com.askmyteacher.app.presentation.home
 
 import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.askmyteacher.app.ui.theme.AskMyTeacherTheme
 
@@ -11,7 +14,15 @@ fun HomeScreen(
     onAskDoubtClick: () -> Unit = {}
 ) {
 
-    val viewModel: HomeViewModel = viewModel()
+    val context = LocalContext.current
+
+    val viewModel: HomeViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return HomeViewModel(context) as T
+            }
+        }
+    )
     val state by viewModel.uiState.collectAsState()
 
     LaunchedEffect(Unit) {

@@ -13,5 +13,6 @@ data class CachedQuestionEntity(
     val imageUrl: String?,
     val answerText: String?,
     val status: String,
-    val createdAt: String?
+    val createdAt: String?,
+    val syncStatus: String = "Synced"
 )
