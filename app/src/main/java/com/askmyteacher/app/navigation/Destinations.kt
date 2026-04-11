@@ -16,3 +16,6 @@ data class Detail(val questionId: String)
 
 @Serializable
 object AskDoubt
+
+@Serializable
+object Settings

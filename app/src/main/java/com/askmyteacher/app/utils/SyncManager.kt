@@ -25,7 +25,6 @@ class SyncManager(
                 val userId = SupabaseManager.client.auth
                     .currentUserOrNull()?.id ?: continue
 
-                // 1️⃣ Insert into Supabase
                 val inserted = SupabaseManager.client
                     .from("questions")
                     .insert(

@@ -10,6 +10,7 @@ import com.askmyteacher.app.presentation.ask.AskDoubtScreen
 import com.askmyteacher.app.presentation.auth.AuthScreen
 import com.askmyteacher.app.presentation.detail.QuestionDetailScreen
 import com.askmyteacher.app.presentation.home.HomeScreen
+import com.askmyteacher.app.presentation.settings.SettingsScreen
 import com.askmyteacher.app.presentation.splash.SplashScreen
 import com.askmyteacher.app.presentation.splash.SplashViewModel
 
@@ -85,5 +86,17 @@ fun AskMyTeacherNavGraph() {
                 }
             )
         }
+
+        composable<Settings> {
+
+            SettingsScreen(
+                onLogoutSuccess = {
+                    navController.navigate(Auth) {
+                        popUpTo<Home> { inclusive = true }
+                    }
+                }
+            )
+        }
+
     }
 }
