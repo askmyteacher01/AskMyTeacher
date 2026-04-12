@@ -1,5 +1,7 @@
 package com.askmyteacher.app.navigation
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
@@ -14,6 +16,7 @@ import com.askmyteacher.app.presentation.settings.SettingsScreen
 import com.askmyteacher.app.presentation.splash.SplashScreen
 import com.askmyteacher.app.presentation.splash.SplashViewModel
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AskMyTeacherNavGraph() {
 
@@ -61,6 +64,9 @@ fun AskMyTeacherNavGraph() {
                 },
                 onAskDoubtClick = {
                     navController.navigate(AskDoubt)
+                },
+                onSettingsClick = {
+                    navController.navigate(Settings)
                 }
             )
         }
@@ -88,15 +94,14 @@ fun AskMyTeacherNavGraph() {
         }
 
         composable<Settings> {
-
             SettingsScreen(
                 onLogoutSuccess = {
                     navController.navigate(Auth) {
                         popUpTo<Home> { inclusive = true }
                     }
-                }
+                },
+                onBack = { navController.popBackStack() }
             )
         }
-
     }
 }

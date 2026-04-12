@@ -4,8 +4,10 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.askmyteacher.app.data.model.Question
@@ -24,30 +26,43 @@ fun QuestionCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() },
-        shape = MaterialTheme.shapes.large,
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 6.dp
+        )
     ) {
 
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
 
             Text(
                 text = question.questionText,
                 style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onPrimary,
                 maxLines = 2
             )
 
-            question.createdAt?.let {
-                Text(
-                    text = formatDate(it),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
 
-            StatusBadge(status = question.status)
+                question.createdAt?.let {
+                    Text(
+                        text = formatDate(it),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                StatusBadge(status = question.status)
+            }
         }
     }
 }
@@ -55,19 +70,31 @@ fun QuestionCard(
 @Composable
 fun StatusBadge(status: String) {
 
-    val color = if (status == "Answered")
-        MaterialTheme.colorScheme.primary
-    else
-        MaterialTheme.colorScheme.tertiary
+    val isAnswered = status == "Answered"
 
-    AssistChip(
-        onClick = {},
-        label = { Text(status) },
-        colors = AssistChipDefaults.assistChipColors(
-            containerColor = color.copy(alpha = 0.15f),
-            labelColor = color
+    val containerColor =
+        if (isAnswered)
+            MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
+        else
+            MaterialTheme.colorScheme.tertiary.copy(alpha = 0.18f)
+
+    val textColor =
+        if (isAnswered)
+            MaterialTheme.colorScheme.primary
+        else
+            MaterialTheme.colorScheme.tertiary
+
+    Surface(
+        shape = RoundedCornerShape(50),
+        color = containerColor
+    ) {
+        Text(
+            text = status,
+            color = textColor,
+            style = MaterialTheme.typography.labelMedium,
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
         )
-    )
+    }
 }
 
 @RequiresApi(Build.VERSION_CODES.O)

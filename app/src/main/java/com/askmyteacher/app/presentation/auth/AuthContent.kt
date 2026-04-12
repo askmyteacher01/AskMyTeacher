@@ -77,12 +77,13 @@ fun AuthContent(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(32.dp),
                 color = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
-                shadowElevation = 16.dp,
+                shadowElevation = 5.dp,
                 tonalElevation = 8.dp
             ) {
 
                 Column(
-                    modifier = Modifier.padding(28.dp),
+                    modifier = Modifier
+                        .padding(28.dp),
                     verticalArrangement = Arrangement.spacedBy(22.dp)
                 ) {
 
@@ -175,43 +176,5 @@ fun AuthContent(
                 }
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun AuthLoginPreview() {
-    AskMyTeacherTheme {
-        AuthContent(
-            state = AuthUiState(
-                email = "test@test.com",
-                password = "123456",
-                mode = AuthMode.LOGIN
-            ),
-            onEmailChange = {},
-            onPasswordChange = {},
-            onSubmit = {},
-            onToggleMode = {},
-            onErrorShown = {}
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun AuthRegisterPreview() {
-    AskMyTeacherTheme {
-        AuthContent(
-            state = AuthUiState(
-                email = "",
-                password = "",
-                mode = AuthMode.REGISTER
-            ),
-            onEmailChange = {},
-            onPasswordChange = {},
-            onSubmit = {},
-            onToggleMode = {},
-            onErrorShown = {}
-        )
     }
 }

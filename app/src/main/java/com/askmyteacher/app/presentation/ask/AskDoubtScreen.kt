@@ -5,12 +5,16 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.askmyteacher.app.presentation.component.AskMyTeacherTopAppBar
 import com.askmyteacher.app.ui.theme.AskMyTeacherTheme
 import com.askmyteacher.app.utils.isNetworkAvailable
 import java.io.File
@@ -59,33 +63,44 @@ fun AskDoubtScreen(
         }
     }
 
-    AskDoubtContent(
-        state = state,
-        onQuestionChange = viewModel::onQuestionChange,
-        onImageClick = {
-            when {
-                ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.CAMERA
-                ) == PackageManager.PERMISSION_GRANTED -> {
-                    cameraLauncher.launch(imageUri)
-                }
-                else -> {
-                    permissionLauncher.launch(Manifest.permission.CAMERA)
-                }
-            }
-        },
-        onSubmitClick = {
-
-            val isOnline = isNetworkAvailable(context)
-
-            viewModel.submitQuestion(
-                imageFile = if (state.selectedImageUri != null) imageFile else null,
-                isOnline = isOnline
+    Scaffold(
+        topBar = {
+            AskMyTeacherTopAppBar(
+                showBack = true,
+                showSettings = false,
+                onBackClick = onBack
             )
-        },
-        onBack = onBack
-    )
+        }
+    ) { padding ->
+
+        AskDoubtContent(
+            modifier = Modifier.padding(padding),
+            state = state,
+            onQuestionChange = viewModel::onQuestionChange,
+            onImageClick = {
+                when {
+                    ContextCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.CAMERA
+                    ) == PackageManager.PERMISSION_GRANTED -> {
+                        cameraLauncher.launch(imageUri)
+                    }
+                    else -> {
+                        permissionLauncher.launch(Manifest.permission.CAMERA)
+                    }
+                }
+            },
+            onSubmitClick = {
+
+                val isOnline = isNetworkAvailable(context)
+
+                viewModel.submitQuestion(
+                    imageFile = if (state.selectedImageUri != null) imageFile else null,
+                    isOnline = isOnline
+                )
+            }
+        )
+    }
 }
 
 @Preview(showBackground = true)
@@ -100,7 +115,6 @@ fun AskDoubtPreview() {
             onQuestionChange = {},
             onImageClick = {},
             onSubmitClick = {},
-            onBack = {}
         )
     }
 }
