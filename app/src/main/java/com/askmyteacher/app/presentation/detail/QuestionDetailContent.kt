@@ -184,27 +184,49 @@ fun parseMarkdown(text: String): AnnotatedString {
 
     val boldRegex = Regex("\\*\\*(.*?)\\*\\*")
     val italicRegex = Regex("\\*(.*?)\\*")
+    val inlineMathRegex = Regex("\\$(.*?)\\$")
+
+    fun cleanLatex(input: String): String {
+        return input
+            .replace("\\pm", "±")
+            .replace("\\neq", "≠")
+            .replace("\\ge", "≥")
+            .replace("\\le", "≤")
+            .replace("\\times", "×")
+            .replace("\\div", "÷")
+            .replace("\\sqrt", "√")
+            .replace(Regex("\\\\frac\\{(.*?)\\}\\{(.*?)\\}"), "($1)/($2)")
+            .replace("^2", "²")
+            .replace("^3", "³")
+    }
 
     return buildAnnotatedString {
 
         val lines = text.split("\n")
 
-        lines.forEachIndexed { index, line ->
+        lines.forEachIndexed { index, rawLine ->
 
-            var processedLine = line
+            var line = rawLine
 
-            if (processedLine.trim().startsWith("* ")) {
+            inlineMathRegex.findAll(line).forEach { match ->
+                val cleaned = cleanLatex(match.groupValues[1])
+                line = line.replace(match.value, cleaned)
+            }
+
+            line = cleanLatex(line)
+
+            if (line.trim().startsWith("* ")) {
                 append("• ")
-                processedLine = processedLine.removePrefix("* ")
+                line = line.removePrefix("* ")
             }
 
             var currentIndex = 0
 
-            boldRegex.findAll(processedLine).forEach { result ->
+            boldRegex.findAll(line).forEach { result ->
                 val start = result.range.first
                 val end = result.range.last + 1
 
-                append(processedLine.substring(currentIndex, start))
+                append(line.substring(currentIndex, start))
 
                 pushStyle(SpanStyle(fontWeight = FontWeight.Bold))
                 append(result.groupValues[1])
@@ -213,9 +235,10 @@ fun parseMarkdown(text: String): AnnotatedString {
                 currentIndex = end
             }
 
-            val remaining = processedLine.substring(currentIndex)
+            val remaining = line.substring(currentIndex)
 
             var italicIndex = 0
+
             italicRegex.findAll(remaining).forEach { result ->
                 val start = result.range.first
                 val end = result.range.last + 1

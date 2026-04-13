@@ -14,62 +14,77 @@ class SyncManager(
     private val database: AppDatabase
 ) {
 
+    private var isSyncing = false
+
     suspend fun syncPending() {
 
-        val pending = database.cachedQuestionDao().getPendingSync()
+        if (isSyncing) return
+        isSyncing = true
 
-        for (local in pending) {
+        try {
+            val pending = database.cachedQuestionDao().getPendingSync()
 
-            try {
+            for (local in pending) {
 
-                val userId = SupabaseManager.client.auth
-                    .currentUserOrNull()?.id ?: continue
+                try {
 
-                val inserted = SupabaseManager.client
-                    .from("questions")
-                    .insert(
-                        InsertQuestion(
-                            user_id = userId,
-                            question_text = local.questionText,
-                            image_url = null,
-                            status = "Pending"
-                        )
-                    ) {
-                        select()
-                    }
-                    .decodeSingle<Question>()
+                    val userId = SupabaseManager.client.auth
+                        .currentUserOrNull()?.id ?: continue
 
-                val response = GeminiService.api.generateAnswer(
-                    apiKey = BuildConfig.GEMINI_API_KEY,
-                    request = buildGeminiRequest(local.questionText)
-                )
+                    database.cachedQuestionDao()
+                        .updateSyncStatus(local.id, "Syncing")
 
-                val answerText = response.candidates
-                    ?.firstOrNull()
-                    ?.content
-                    ?.parts
-                    ?.firstOrNull()
-                    ?.text
-
-                if (answerText != null && inserted.id != null) {
-
-                    SupabaseManager.client
+                    val inserted = SupabaseManager.client
                         .from("questions")
-                        .update(
-                            mapOf(
-                                "answer_text" to answerText,
-                                "status" to "Answered"
+                        .insert(
+                            InsertQuestion(
+                                user_id = userId,
+                                question_text = local.questionText,
+                                image_url = null,
+                                status = "Pending"
                             )
                         ) {
-                            filter { eq("id", inserted.id) }
+                            select()
                         }
+                        .decodeSingle<Question>()
+
+                    val response = GeminiService.api.generateAnswer(
+                        apiKey = BuildConfig.GEMINI_API_KEY,
+                        request = buildGeminiRequest(local.questionText)
+                    )
+
+                    val answerText = response.candidates
+                        ?.firstOrNull()
+                        ?.content
+                        ?.parts
+                        ?.firstOrNull()
+                        ?.text
+
+                    if (answerText != null && inserted.id != null) {
+
+                        SupabaseManager.client
+                            .from("questions")
+                            .update(
+                                mapOf(
+                                    "answer_text" to answerText,
+                                    "status" to "Answered"
+                                )
+                            ) {
+                                filter { eq("id", inserted.id) }
+                            }
+                    }
+
+                    database.cachedQuestionDao().deleteById(local.id)
+
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    database.cachedQuestionDao()
+                        .updateSyncStatus(local.id, "PendingSync")
                 }
-
-                database.cachedQuestionDao().deleteById(local.id)
-
-            } catch (e: Exception) {
-                e.printStackTrace()
             }
+
+        } finally {
+            isSyncing = false
         }
     }
 }

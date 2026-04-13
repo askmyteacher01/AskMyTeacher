@@ -1,5 +1,6 @@
 package com.askmyteacher.app.presentation.ask
 
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -21,6 +22,7 @@ import com.askmyteacher.app.data.ai.buildGeminiRequest
 import com.askmyteacher.app.data.local.AppDatabase
 import com.askmyteacher.app.data.local.CachedQuestionEntity
 import com.askmyteacher.app.utils.NetworkMonitor
+import java.io.FileOutputStream
 
 @Serializable
 data class InsertQuestion(
@@ -93,13 +95,36 @@ class AskDoubtViewModel(
 
                 if (imageFile != null && state.selectedImageUri != null) {
 
-                    val bytes = imageFile.readBytes()
+                    val bitmap = BitmapFactory.decodeFile(imageFile.absolutePath)
+
+                    val compressedFile = File(
+                        imageFile.parent,
+                        "compressed_${System.currentTimeMillis()}.jpg"
+                    )
+
+                    val out = FileOutputStream(compressedFile)
+
+                    bitmap.compress(
+                        android.graphics.Bitmap.CompressFormat.JPEG,
+                        75,
+                        out
+                    )
+
+                    out.close()
+
+                    val bytes = compressedFile.readBytes()
                     val fileName = "question_${System.currentTimeMillis()}.jpg"
+
+                    val start = System.currentTimeMillis()
 
                     SupabaseManager.client
                         .storage
                         .from("question-images")
                         .upload(fileName, bytes)
+
+                    val end = System.currentTimeMillis()
+
+                    Log.d("UploadTime", "Upload took ${end - start} ms")
 
                     imageUrl = SupabaseManager.client
                         .storage

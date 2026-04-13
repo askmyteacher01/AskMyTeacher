@@ -86,8 +86,10 @@ class HomeViewModel(
                         )
                     }
 
+                    val sorted = remote.sortedByDescending { it.createdAt }
+
                     _uiState.update {
-                        it.copy(questions = remote)
+                        it.copy(questions = sorted)
                     }
                 }
 
@@ -105,6 +107,7 @@ class HomeViewModel(
 
             networkMonitor.isConnected.collect { connected ->
                 if (connected) {
+                    SyncManager(database).syncPending()
                     fetchQuestions()
                 }
             }

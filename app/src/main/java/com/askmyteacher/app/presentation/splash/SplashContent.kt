@@ -15,6 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.askmyteacher.app.ui.theme.LightBackground
 
 @Composable
 fun SplashContent() {
@@ -22,7 +23,7 @@ fun SplashContent() {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
+            .background(LightBackground),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -33,7 +34,7 @@ fun SplashContent() {
             Image(
                 painter = painterResource(id = R.drawable.ic_askmyteacher_logo),
                 contentDescription = "AskMyTeacher Logo",
-                modifier = Modifier.size(200.dp)
+                modifier = Modifier.size(270.dp)
             )
 
             Text(
